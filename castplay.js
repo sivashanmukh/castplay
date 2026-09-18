@@ -163,7 +163,7 @@
       '<button type="button" data-act="play" aria-label="Play"></button>' +
       '<input type="range" min="0" max="1000" value="0" aria-label="Seek">' +
       '<span class="castplay-time"></span>' +
-      '<button type="button" data-act="speed" aria-label="Playback speed">1×</button>' +
+      '<button type="button" data-act="speed" aria-label="Playback speed">1\u00d7</button>' +
       '</div>';
     var pre = el.querySelector('.castplay-screen');
     var btn = el.querySelector('[data-act=play]');
@@ -204,7 +204,7 @@
     btn.addEventListener('click', toggle);
     speedBtn.addEventListener('click', function () {
       speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
-      speedBtn.textContent = speed + '×';
+      speedBtn.textContent = speed + '\u00d7';
     });
     range.addEventListener('input', function () { seek((Number(range.value) / 1000) * dur); setPlaying(playing); });
     pre.addEventListener('keydown', function (e) {
