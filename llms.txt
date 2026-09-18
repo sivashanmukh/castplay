@@ -1,0 +1,100 @@
+# castplay
+
+> A ~12 KB dependency-free player for asciicast v2 terminal recordings, for pages
+> where asciinema-player cannot run: no WebAssembly, no CDN stylesheet, no fetch.
+
+Use asciinema-player (https://github.com/asciinema/asciinema-player) instead when
+the page allows wasm, its stylesheet and a fetch. Use castplay when it does not:
+a strict Content-Security-Policy, a single self-contained .html file, an
+LLM-generated artifact, or an offline docs bundle. The recording lives in the
+page; nothing is loaded at runtime.
+
+## Install
+
+- npm: `npm i castplay`
+- CDN: `<script src="https://cdn.jsdelivr.net/npm/castplay@0/castplay.js"></script>`
+- copy: `castplay.js` + `castplay.css` into the page (no build step)
+
+## Minimal page
+
+```html
+<link rel="stylesheet" href="castplay.css">
+<div data-castplay="cast-1"></div>
+<script type="application/json" id="cast-1">
+  [{"version":2,"width":80,"height":24},[0.1,"o","hello\r\n"]]
+</script>
+<script src="castplay.js"></script>
+<script>castplay.auto()</script>
+```
+
+Inline `castplay.css` in a `<style>` and `castplay.js` in a `<script>` for a
+single-file page. The JSON script tag holds the recording — a `fetch` is not
+needed and, under a strict CSP, not allowed.
+
+## API
+
+- `castplay.auto(root?)` — mounts every `[data-castplay]` element in `root`
+  (default `document`), returns the players in document order. The attribute value
+  is the `id` of a `<script type="application/json">` holding the recording.
+  Options come from `data-poster` (`end` | `start` | seconds), `data-label`,
+  `data-idle-limit`, `data-rows`, `data-autoplay`.
+- `castplay.mount(el, cast, opts?)` — mounts one; returns a player.
+  `opts`: `{poster='end', idleLimit=1.2, speed=1, rows, autoplay=false, label}`.
+- `castplay.parse(cast)` — `{head, events}`; throws on anything but asciicast v2.
+- `castplay.Screen(cols, rows)` — the terminal emulator alone, DOM-free.
+  `.write(str)`, `.html()`, `.text()`, `.reset()`. Usable in Node.
+- player: `.play()`, `.pause()`, `.seek(seconds)`, `.duration`, `.text()`.
+
+`cast` accepts asciicast v2 as raw file text, as the parsed array
+`[header, ...events]`, or as `{header, events}`. Input (`"i"`) events are ignored.
+
+## Markup it generates
+
+```html
+<div class="castplay">
+  <pre class="castplay-screen" tabindex="0" role="img" aria-label="..."></pre>
+  <div class="castplay-controls">
+    <button data-act="play">Play</button>
+    <input type="range" min="0" max="1000">
+    <span class="castplay-time">0:00 / 0:00</span>
+    <button data-act="speed">1x</button>
+  </div>
+</div>
+```
+
+Theme by overriding CSS variables on `.castplay`: `--castplay-bg`, `--castplay-fg`,
+`--castplay-chrome`, `--castplay-border`, `--castplay-accent`, `--castplay-radius`,
+`--castplay-font`, `--castplay-size`.
+
+## Behaviour worth knowing
+
+- `poster: 'end'` opens on the final frame, so the outcome is readable before
+  anyone presses play. `'start'` opens on a blank screen, which usually looks broken.
+- `idleLimit` clips gaps between events; order and content are never changed.
+- Keyboard on the screen element: space/enter toggles, arrow left/right seek 3s.
+- `\n` is a line feed only (column preserved), as on a real terminal — recordings
+  use `\r\n`. A player that resets the column on `\n` will mis-render real casts.
+- Backward seeks replay from the start internally; there is no frame cache.
+
+## Emulation scope
+
+Supported: SGR (16 / 256 / truecolour, bold, dim, italic, underline), `\r`,
+backspace, tab, cursor up/down/left/right/column/position, erase line (`CSI K`)
+and screen (`CSI J`), line wrap, scrollback, OSC swallowing.
+
+Not supported: alternate screen, scroll regions, resize/reflow, mouse. Full-screen
+TUIs (vim, htop) need asciinema-player.
+
+## Recording
+
+`asciinema rec -c ./demo.sh demo.cast --cols 100 --rows 24`, with
+[demo-magic](https://github.com/paxtonhare/demo-magic) driving `demo.sh` so the
+commands type themselves. demo-magic needs `pv` (or pass `-d`), and unsets
+`TYPE_SPEED`, so `set -u` breaks it.
+
+## Repo
+
+- source: https://github.com/sivashanmukh/castplay
+- demo: https://sivashanmukh.github.io/castplay/demo/
+- tests: `node test.js` (no framework, no dependencies)
+- license: MIT
