@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>castplay</title>
+<link rel="stylesheet" href="../castplay.css">
+<style>
+  body { margin: 0; padding: 32px; background: #010409; color: #c9d1d9;
+         font: 14px/1.6 ui-sans-serif, system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: #8b949e; margin: 0 0 20px; }
+  details { margin-top: 12px; color: #8b949e; }
+  details pre { overflow-x: auto; font-size: 12px; }
+</style>
+<main>
+  <h1>castplay</h1>
+  <p>An asciicast v2 recording, replayed with play / pause / seek / speed. No dependencies.</p>
+
+  <div data-castplay="cast-hello" data-poster="end" data-label="castplay demo recording"></div>
+
+  <details><summary>Transcript</summary><pre></pre></details>
+</main>
+
+<script type="application/json" id="cast-hello"></script>
+<script src="../castplay.js"></script>
+<script>
+  // This page keeps the recording in a separate .cast file so it stays readable,
+  // and fetches it. In a page that cannot fetch (a CSP-restricted embed), paste
+  // the recording straight into the JSON script tag instead.
+  fetch('hello.cast').then(r => r.text()).then(text => {
+    document.getElementById('cast-hello').textContent =
+      JSON.stringify(text.trim().split('\n').map(JSON.parse));
+    const [player] = castplay.auto();
+    document.querySelector('details pre').textContent = player.text();
+  });
+</script>

@@ -1,0 +1,47 @@
+/* castplay — default look. Everything is a CSS variable; override what you like. */
+.castplay {
+  --castplay-bg: #0d1117;
+  --castplay-fg: #c9d1d9;
+  --castplay-chrome: #8b949e;
+  --castplay-border: #30363d;
+  --castplay-accent: #58a6ff;
+  --castplay-radius: 8px;
+  --castplay-font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --castplay-size: 12.5px;
+  border: 1px solid var(--castplay-border);
+  border-radius: var(--castplay-radius);
+  overflow: hidden;
+  background: var(--castplay-bg);
+}
+.castplay-screen {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  color: var(--castplay-fg);
+  font: var(--castplay-size)/1.5 var(--castplay-font);
+  white-space: pre;
+  tab-size: 8;
+}
+.castplay-screen:focus-visible { outline: 2px solid var(--castplay-accent); outline-offset: -2px; }
+.castplay-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--castplay-border);
+  background: color-mix(in srgb, var(--castplay-bg) 80%, #fff 6%);
+}
+.castplay-controls button {
+  min-width: 58px;
+  padding: 3px 9px;
+  border: 1px solid var(--castplay-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--castplay-fg);
+  font: 600 11px/1.4 var(--castplay-font);
+  cursor: pointer;
+}
+.castplay-controls button:hover { border-color: var(--castplay-accent); color: var(--castplay-accent); }
+.castplay-controls button[data-act="speed"] { min-width: 34px; }
+.castplay-controls input[type="range"] { flex: 1; min-width: 60px; accent-color: var(--castplay-accent); cursor: pointer; }
+.castplay-time { color: var(--castplay-chrome); font: 11px var(--castplay-font); font-variant-numeric: tabular-nums; }

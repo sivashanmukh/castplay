@@ -1,0 +1,11 @@
+{
+  "name": "castplay",
+  "version": "0.1.0",
+  "description": "A tiny asciicast v2 player for pages that cannot load asciinema-player: no dependencies, no wasm, no network.",
+  "main": "castplay.js",
+  "files": ["castplay.js", "castplay.css"],
+  "scripts": { "test": "node test.js" },
+  "keywords": ["asciicast", "asciinema", "terminal", "player", "ansi", "csp"],
+  "repository": { "type": "git", "url": "https://github.com/sivashanmukh/castplay.git" },
+  "license": "MIT"
+}
