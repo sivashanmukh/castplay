@@ -25,14 +25,18 @@ cdn=$({ curl -sf "https://data.jsdelivr.com/v1/stats/packages/npm/$PKG?period=mo
 # does NOT have it and 403s, so in CI these stay blank unless STATS_TOKEN is set.
 # Blank means "not collected"; 0 would claim nobody visited.
 stars=0; forks=0; views=""; uniques=""; clones=""; referrers=""
-gh_get() { gh api "$1" --jq "$2" 2>/dev/null || true; }
+# gh prints its error body to STDOUT, so a failed call must be discarded by exit
+# status, not by parsing what came back.
+gh_get() { local o; o=$(gh api "$1" --jq "$2" 2>/dev/null) || true; printf '%s\n' "$o"; }
+gh_num() { local o; o=$(gh_get "$1" "$2"); [[ $o =~ ^[0-9]+$ ]] && printf '%s' "$o"; return 0; }
 if command -v gh >/dev/null 2>&1; then
   read -r stars forks < <(gh_get "repos/$REPO" '[.stargazers_count, .forks_count] | @tsv')
   stars=$(echo "${stars:-0}" | num); forks=$(echo "${forks:-0}" | num)
-  views=$(gh_get "repos/$REPO/traffic/views" '.count')
-  uniques=$(gh_get "repos/$REPO/traffic/views" '.uniques')
-  clones=$(gh_get "repos/$REPO/traffic/clones" '.count')
-  referrers=$(gh_get "repos/$REPO/traffic/popular/referrers" '[.[] | "\(.referrer):\(.count)"] | join(" ")')
+  views=$(gh_num "repos/$REPO/traffic/views" '.count')
+  uniques=$(gh_num "repos/$REPO/traffic/views" '.uniques')
+  clones=$(gh_num "repos/$REPO/traffic/clones" '.count')
+  # commas and quotes would break the CSV field
+  referrers=$(gh_get "repos/$REPO/traffic/popular/referrers" '[.[] | "\(.referrer):\(.count)"] | join(" ")' | tr -d ',"')
   [ -n "$views" ] || echo "note: traffic not readable with this token (needs administration:read); leaving those columns blank" >&2
 fi
 
