@@ -1,5 +1,9 @@
 name: stats
 on:
+  push:
+    paths:
+      - .github/workflows/stats.yml
+      - tools/stats.sh
   schedule:
     - cron: '17 6 * * 1'   # Mondays: GitHub traffic only keeps 14 days
   workflow_dispatch:
