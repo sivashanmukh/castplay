@@ -21,14 +21,19 @@ npm_month=$({ curl -sf "https://api.npmjs.org/downloads/point/last-month/$PKG" |
 cdn=$({ curl -sf "https://data.jsdelivr.com/v1/stats/packages/npm/$PKG?period=month" || true; } | jq_get '.hits.total')
 
 # GitHub: interest, and where it came from.
-stars=0; forks=0; views=0; uniques=0; clones=0; referrers=""
+# Traffic needs a token with repo administration:read — the Actions GITHUB_TOKEN
+# does NOT have it and 403s, so in CI these stay blank unless STATS_TOKEN is set.
+# Blank means "not collected"; 0 would claim nobody visited.
+stars=0; forks=0; views=""; uniques=""; clones=""; referrers=""
+gh_get() { gh api "$1" --jq "$2" 2>/dev/null || true; }
 if command -v gh >/dev/null 2>&1; then
-  read -r stars forks < <(gh api "repos/$REPO" --jq '[.stargazers_count, .forks_count] | @tsv' 2>/dev/null || echo "0	0")
-  views=$(gh api "repos/$REPO/traffic/views" --jq '.count' 2>/dev/null | num)
-  uniques=$(gh api "repos/$REPO/traffic/views" --jq '.uniques' 2>/dev/null | num)
-  clones=$(gh api "repos/$REPO/traffic/clones" --jq '.count' 2>/dev/null | num)
-  referrers=$(gh api "repos/$REPO/traffic/popular/referrers" \
-    --jq '[.[] | "\(.referrer):\(.count)"] | join(" ")' 2>/dev/null || true)
+  read -r stars forks < <(gh_get "repos/$REPO" '[.stargazers_count, .forks_count] | @tsv')
+  stars=$(echo "${stars:-0}" | num); forks=$(echo "${forks:-0}" | num)
+  views=$(gh_get "repos/$REPO/traffic/views" '.count')
+  uniques=$(gh_get "repos/$REPO/traffic/views" '.uniques')
+  clones=$(gh_get "repos/$REPO/traffic/clones" '.count')
+  referrers=$(gh_get "repos/$REPO/traffic/popular/referrers" '[.[] | "\(.referrer):\(.count)"] | join(" ")')
+  [ -n "$views" ] || echo "note: traffic not readable with this token (needs administration:read); leaving those columns blank" >&2
 fi
 
 mkdir -p "$(dirname "$OUT")"

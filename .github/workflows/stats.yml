@@ -15,9 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Collect
-        run: bash -x ./tools/stats.sh
+        run: ./tools/stats.sh
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # STATS_TOKEN (a PAT with administration:read) unlocks the traffic columns;
+          # without it the run still collects npm, CDN and stars.
+          GH_TOKEN: ${{ secrets.STATS_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Commit the row
         run: |
           git config user.name  "github-actions[bot]"
