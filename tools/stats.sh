@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Where castplay is being found and used. Appends one row to stats/history.csv
-# and prints it. GitHub traffic is only kept for 14 days upstream, which is the
-# reason this runs on a schedule instead of being read on demand.
+# and prints it. That file is gitignored and stays on your machine: traffic
+# numbers and referrers are nobody else's business.
+#
+# GitHub keeps traffic for only 14 days, so run this occasionally if you want a
+# history — nothing collects it for you.
 #
 #   ./tools/stats.sh            # needs gh (authenticated) for the GitHub numbers
+#   OUT=~/castplay-stats.csv ./tools/stats.sh
 set -euo pipefail
 
 REPO=${REPO:-sivashanmukh/castplay}
@@ -21,9 +25,9 @@ npm_month=$({ curl -sf "https://api.npmjs.org/downloads/point/last-month/$PKG" |
 cdn=$({ curl -sf "https://data.jsdelivr.com/v1/stats/packages/npm/$PKG?period=month" || true; } | jq_get '.hits.total')
 
 # GitHub: interest, and where it came from.
-# Traffic needs a token with repo administration:read — the Actions GITHUB_TOKEN
-# does NOT have it and 403s, so in CI these stay blank unless STATS_TOKEN is set.
-# Blank means "not collected"; 0 would claim nobody visited.
+# Traffic needs a token with repo administration:read. Your own gh login has it;
+# a CI GITHUB_TOKEN does not, and 403s. Blank means "not collected" — 0 would
+# claim nobody visited.
 stars=0; forks=0; views=""; uniques=""; clones=""; referrers=""
 # gh prints its error body to STDOUT, so a failed call must be discarded by exit
 # status, not by parsing what came back.
